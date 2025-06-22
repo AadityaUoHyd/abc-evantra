@@ -50,7 +50,6 @@ const PurchaseTicketPage: React.FC = () => {
       }
       try {
         const eventData = await getPublishedEvent(eventId);
-        console.log("PublishedEvent response:", eventData); // Debug log
         const selectedTicketType = eventData.ticketTypes.find(
           (tt) => tt.id === ticketTypeId
         );
@@ -59,9 +58,7 @@ const PurchaseTicketPage: React.FC = () => {
         }
         setTicketType(selectedTicketType);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to load ticket details";
-        console.error("fetchTicketType error:", err);
-        setError(errorMessage);
+        setError(err instanceof Error ? err.message : "Failed to fetch ticket details");
       }
     };
 
@@ -76,34 +73,6 @@ const PurchaseTicketPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [isPurchaseSuccess, navigate]);
 
-  useEffect(() => {
-    // Polling to fix SVG attributes in Razorpay iframe
-    const fixSvgAttributes = () => {
-      const iframes = document.querySelectorAll('iframe');
-      iframes.forEach((iframe) => {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDoc) {
-            const svgs = iframeDoc.querySelectorAll('svg[width="auto"], svg[height="auto"]');
-            svgs.forEach((svg) => {
-              if (svg.getAttribute('width') === 'auto') {
-                svg.setAttribute('width', '24');
-              }
-              if (svg.getAttribute('height') === 'auto') {
-                svg.setAttribute('height', '24');
-              }
-            });
-          }
-        } catch (e) {
-          console.warn('Unable to access iframe content:', e);
-        }
-      });
-    };
-
-    const interval = setInterval(fixSvgAttributes, 500); // Check every 500ms
-    return () => clearInterval(interval);
-  }, []);
-
   const handlePurchase = async () => {
     if (
       authLoading ||
@@ -112,7 +81,7 @@ const PurchaseTicketPage: React.FC = () => {
       !ticketTypeId ||
       !(window as any).Razorpay
     ) {
-      setError("Please ensure you're logged in and Razorpay is loaded");
+      setError("Missing required information or Razorpay not loaded");
       return;
     }
 
@@ -121,7 +90,6 @@ const PurchaseTicketPage: React.FC = () => {
 
     try {
       const purchaseResponse = await purchaseTicket(user.access_token, eventId, ticketTypeId, quantity);
-      console.log("PurchaseTicket response:", purchaseResponse); // Debug log
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: purchaseResponse.amount,
@@ -129,14 +97,12 @@ const PurchaseTicketPage: React.FC = () => {
         order_id: purchaseResponse.orderId,
         name: "ABC Evantra",
         description: `Ticket Purchase for ${ticketType?.name || "Event"}`,
-        handler: async function (response: any) {
+        handler: async function () {
           try {
-            console.log("Razorpay handler response:", response); // Debug log
             await confirmPurchase(user.access_token, eventId, ticketTypeId, purchaseResponse.orderId, quantity);
             setIsPurchaseSuccess(true);
           } catch (err: any) {
-            console.error("ConfirmPurchase error:", err);
-            setError(err.message || "Unable to confirm your purchase. Please contact support.");
+            setError(err.message || "Failed to confirm purchase");
           } finally {
             setIsProcessing(false);
           }
@@ -153,8 +119,7 @@ const PurchaseTicketPage: React.FC = () => {
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (err: any) {
-      console.error("handlePurchase error:", err);
-      setError(err.message || "Unable to process your purchase");
+      setError(err.message || "An unknown error occurred");
       setIsProcessing(false);
     }
   };
@@ -164,7 +129,7 @@ const PurchaseTicketPage: React.FC = () => {
       <div className="bg-gradient-to-br from-black via-gray-900 to-black min-h-screen text-white flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-10 text-center">
-            <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-4 animate-pulse" width={80} height={80} />
+            <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-4 animate-pulse" />
             <h2 className="text-3xl font-bold text-green-600 mb-2">Thank You!</h2>
             <p className="text-gray-700 text-base mb-1">
               Your ticket purchase was <span className="font-semibold">successful</span>.
@@ -197,14 +162,13 @@ const PurchaseTicketPage: React.FC = () => {
         <div className="bg-white border-gray-300 shadow-sm border rounded-lg space-y-4 p-6 text-black">
           {error && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" width={16} height={16} />
-              <AlertTitle>Error</AlertTitle>
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           {!canPurchase && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" width={16} height={16} />
+              <AlertCircle className="h-4 w-4" />
               <AlertTitle>Access Denied</AlertTitle>
               <AlertDescription>Only attendees can purchase tickets.</AlertDescription>
             </Alert>
@@ -239,10 +203,8 @@ const PurchaseTicketPage: React.FC = () => {
             >
               {ticketType.seatLeft === 0 ? "Sold Out" : isProcessing ? "Processing..." : "Pay with Razorpay"}
             </Button>
-            <Button
-              onClick={() => navigate("/events")}
-              className="mx-3 bg-gray-500 hover:bg-gray-700 text-white rounded-lg px-6 py-3 text-lg font-semibold transition-colors duration-200"
-            >
+            <Button onClick={() => navigate("/events")}
+              className="mx-3 bg-gray-500 hover:bg-gray-700 text-white rounded-lg px-6 py-3 text-lg font-semibold transition-colors duration-200">
               Back to Events
             </Button>
           </div>
