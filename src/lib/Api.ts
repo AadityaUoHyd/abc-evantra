@@ -8,7 +8,6 @@ import {
   PurchaseTicketResponse,
   SpringBootPagination,
   TicketDetails,
-  TicketSummary,
   TicketValidationRequest,
   TicketValidationResponse,
   UpdateEventRequest,
@@ -255,53 +254,50 @@ export const confirmPurchase = async (
   orderId: string,
   quantity: number,
 ): Promise<void> => {
-  const response = await fetch(
-    `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  const responseBody = await response.json();
-
-  if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
-    }
-  }
-};
-
-export const listTickets = async (
-  accessToken: string,
-  page: number,
-): Promise<SpringBootPagination<TicketSummary>> => {
-  const response = await fetch(`${API_PREFIX}/tickets?page=${page}&size=8`, {
-    method: "GET",
+  const url = `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`;
+  console.log("ConfirmPurchase request:", { url, orderId, quantity }); // Debug log
+  const response = await fetch(url, {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
   });
 
-  const responseBody = await response.json();
+  console.log("ConfirmPurchase response:", { status: response.status, statusText: response.statusText }); // Debug log
+
+  if (response.status === 204) {
+    console.log("ConfirmPurchase success: No Content"); // Success log
+    return; // 204 No Content is valid
+  }
 
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error("ConfirmPurchase error response:", { status: response.status, text }); // Debug log
+    if (!text) {
+      throw new Error(`Purchase confirmation failed: ${response.status} ${response.statusText}`);
+    }
+    try {
+      const responseBody = JSON.parse(text);
+      if (isErrorResponse(responseBody)) {
+        throw new Error(responseBody.error);
+      }
+      throw new Error("Unexpected response format");
+    } catch (e) {
+      throw new Error(`Purchase confirmation failed: ${response.status} ${response.statusText} - ${text}`);
     }
   }
 
-  return responseBody as SpringBootPagination<TicketSummary>;
+  const text = await response.text();
+  if (text) {
+    try {
+      const responseBody = JSON.parse(text);
+      console.log("ConfirmPurchase JSON body:", responseBody); // Debug log
+    } catch (e) {
+      console.error("Invalid JSON in confirmPurchase:", text);
+      throw new Error("Failed to parse confirmation data");
+    }
+  }
 };
 
 export const getTicket = async (
