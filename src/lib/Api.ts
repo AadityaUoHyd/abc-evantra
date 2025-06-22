@@ -15,6 +15,9 @@ import {
   OrganizerAnalyticsResponse,
 } from "@/domain/Domain";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+const API_PREFIX = import.meta.env.MODE === 'development' ? '/api/v1' : `${BASE_URL}/api/v1`;
+
 export const createEvent = async (
   accessToken: string,
   request: CreateEventRequest,
@@ -26,7 +29,7 @@ export const createEvent = async (
     formData.append("image", image);
   }
 
-  const response = await fetch("/api/v1/events", {
+  const response = await fetch(`${API_PREFIX}/events`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -52,7 +55,7 @@ export const updateEvent = async (
     formData.append("image", image);
   }
 
-  const response = await fetch(`/api/v1/events/${id}`, {
+  const response = await fetch(`${API_PREFIX}/events/${id}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -67,7 +70,7 @@ export const updateEvent = async (
 };
 
 export const getEvent = async (accessToken: string, id: string | undefined): Promise<EventDetails> => {
-  const response = await fetch(`/api/v1/events/${id}`, {
+  const response = await fetch(`${API_PREFIX}/events/${id}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -85,7 +88,7 @@ export const listEvents = async (
   accessToken: string,
   page: number,
 ): Promise<SpringBootPagination<EventSummary>> => {
-  const response = await fetch(`/api/v1/events?page=${page}&size=2`, {
+  const response = await fetch(`${API_PREFIX}/events?page=${page}&size=2`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -111,7 +114,7 @@ export const deleteEvent = async (
   accessToken: string,
   id: string,
 ): Promise<void> => {
-  const response = await fetch(`/api/v1/events/${id}`, {
+  const response = await fetch(`${API_PREFIX}/events/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -133,25 +136,30 @@ export const deleteEvent = async (
 export const listPublishedEvents = async (
   page: number,
 ): Promise<SpringBootPagination<PublishedEventSummary>> => {
-  const url = `/api/v1/published-events?page=${page}&size=50`;
+  const url = `${API_PREFIX}/published-events?page=${page}&size=50`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
-  const responseBody = await response.json();
 
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    let errorMessage = `Failed to fetch events: ${response.status} ${response.statusText}`;
+    try {
+      const responseBody = await response.json();
+      if (isErrorResponse(responseBody)) {
+        errorMessage = responseBody.error;
+      } else {
+        console.error(JSON.stringify(responseBody));
+      }
+    } catch (e) {
+      console.error("Non-JSON response:", await response.text());
     }
+    throw new Error(errorMessage);
   }
 
-  return responseBody as SpringBootPagination<PublishedEventSummary>;
+  return response.json() as Promise<SpringBootPagination<PublishedEventSummary>>;
 };
 
 export const searchPublishedEvents = async (
@@ -159,30 +167,36 @@ export const searchPublishedEvents = async (
   page: number,
 ): Promise<SpringBootPagination<PublishedEventSummary>> => {
   const encodedQuery = encodeURIComponent(query);
-  const url = `/api/v1/published-events?q=${encodedQuery}&page=${page}&size=50`;
+  const url = `${API_PREFIX}/published-events?q=${encodedQuery}&page=${page}&size=50`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
-  const responseBody = await response.json();
 
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    let errorMessage = `Failed to search events: ${response.status} ${response.statusText}`;
+    try {
+      const responseBody = await response.json();
+      if (isErrorResponse(responseBody)) {
+        errorMessage = responseBody.error;
+      } else {
+        console.error(JSON.stringify(responseBody));
+      }
+    } catch (e) {
+      console.error("Non-JSON response:", await response.text());
     }
+    throw new Error(errorMessage);
   }
-  return responseBody as SpringBootPagination<PublishedEventSummary>;
+
+  return response.json() as Promise<SpringBootPagination<PublishedEventSummary>>;
 };
 
 export const getPublishedEvent = async (
   id: string,
 ): Promise<PublishedEventDetails> => {
-  const response = await fetch(`/api/v1/published-events/${id}`, {
+  const response = await fetch(`${API_PREFIX}/published-events/${id}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -210,7 +224,7 @@ export const purchaseTicket = async (
   quantity: number,
 ): Promise<PurchaseTicketResponse> => {
   const response = await fetch(
-    `/api/v1/events/${eventId}/ticket-types/${ticketTypeId}/tickets?quantity=${quantity}`,
+    `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets?quantity=${quantity}`,
     {
       method: "POST",
       headers: {
@@ -242,7 +256,7 @@ export const confirmPurchase = async (
   quantity: number,
 ): Promise<void> => {
   const response = await fetch(
-    `/api/v1/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`,
+    `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`,
     {
       method: "POST",
       headers: {
@@ -268,7 +282,7 @@ export const listTickets = async (
   accessToken: string,
   page: number,
 ): Promise<SpringBootPagination<TicketSummary>> => {
-  const response = await fetch(`/api/v1/tickets?page=${page}&size=8`, {
+  const response = await fetch(`${API_PREFIX}/tickets?page=${page}&size=8`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -294,7 +308,7 @@ export const getTicket = async (
   accessToken: string,
   id: string,
 ): Promise<TicketDetails> => {
-  const response = await fetch(`/api/v1/tickets/${id}`, {
+  const response = await fetch(`${API_PREFIX}/tickets/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -320,7 +334,7 @@ export const getTicketQr = async (
   accessToken: string,
   id: string,
 ): Promise<Blob> => {
-  const response = await fetch(`/api/v1/tickets/${id}/qr-codes`, {
+  const response = await fetch(`${API_PREFIX}/tickets/${id}/qr-codes`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -338,7 +352,7 @@ export const validateTicket = async (
   accessToken: string,
   request: TicketValidationRequest,
 ): Promise<TicketValidationResponse> => {
-  const response = await fetch(`/api/v1/ticket-validations`, {
+  const response = await fetch(`${API_PREFIX}/ticket-validations`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -364,7 +378,7 @@ export const validateTicket = async (
 export const getOrganizerAnalytics = async (
   accessToken: string,
 ): Promise<OrganizerAnalyticsResponse> => {
-  const response = await fetch(`/api/v1/organizers/analytics`, {
+  const response = await fetch(`${API_PREFIX}/organizers/analytics`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
