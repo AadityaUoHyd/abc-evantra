@@ -255,26 +255,52 @@ export const confirmPurchase = async (
   orderId: string,
   quantity: number,
 ): Promise<void> => {
-  const response = await fetch(
-    `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+  const url = `${API_PREFIX}/events/${eventId}/ticket-types/${ticketTypeId}/tickets/confirm?orderId=${orderId}&quantity=${quantity}`;
+  console.log("ConfirmPurchase request:", { url, orderId, quantity });
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
     },
-  );
+  });
 
-  const responseBody = await response.json();
+  console.log("ConfirmPurchase response:", { status: response.status, statusText: response.statusText });
+
+  if (response.status === 204) {
+    console.log("ConfirmPurchase success: No Content");
+    return;
+  }
 
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error("ConfirmPurchase error response:", { status: response.status, text });
+    if (!text) {
+      throw new Error(`Purchase confirmation failed: ${response.status} ${response.statusText}`);
     }
+    try {
+      const responseBody = JSON.parse(text);
+      if (isErrorResponse(responseBody)) {
+        throw new Error(responseBody.error);
+      }
+      throw new Error("Unexpected response format");
+    } catch (e) {
+      throw new Error(`Purchase confirmation failed: ${response.status} ${response.statusText} - ${text}`);
+    }
+  }
+
+  // If the response is OK but not 204, attempt to parse the body
+  const text = await response.text();
+  if (text) {
+    try {
+      const responseBody = JSON.parse(text);
+      console.log("ConfirmPurchase JSON body:", responseBody);
+    } catch (e) {
+      console.error("Invalid JSON in confirmPurchase:", text);
+      throw new Error("Failed to parse confirmation data");
+    }
+  } else {
+    console.log("ConfirmPurchase success: Empty response body");
   }
 };
 

@@ -74,55 +74,59 @@ const PurchaseTicketPage: React.FC = () => {
   }, [isPurchaseSuccess, navigate]);
 
   const handlePurchase = async () => {
-    if (
-      authLoading ||
-      !user?.access_token ||
-      !eventId ||
-      !ticketTypeId ||
-      !(window as any).Razorpay
-    ) {
-      setError("Missing required information or Razorpay not loaded");
-      return;
-    }
+  if (
+    authLoading ||
+    !user?.access_token ||
+    !eventId ||
+    !ticketTypeId ||
+    !(window as any).Razorpay
+  ) {
+    setError("Please ensure you're logged in and Razorpay is loaded");
+    return;
+  }
 
-    setIsProcessing(true);
-    setError(undefined);
+  setIsProcessing(true);
+  setError(undefined);
 
-    try {
-      const purchaseResponse = await purchaseTicket(user.access_token, eventId, ticketTypeId, quantity);
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: purchaseResponse.amount,
-        currency: purchaseResponse.currency,
-        order_id: purchaseResponse.orderId,
-        name: "ABC Evantra",
-        description: `Ticket Purchase for ${ticketType?.name || "Event"}`,
-        handler: async function () {
-          try {
-            await confirmPurchase(user.access_token, eventId, ticketTypeId, purchaseResponse.orderId, quantity);
-            setIsPurchaseSuccess(true);
-          } catch (err: any) {
-            setError(err.message || "Failed to confirm purchase");
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          email: user.profile.email,
-          contact: user.profile.phone_number,
-        },
-        theme: {
-          color: "#9333ea",
-        },
-      };
+  try {
+    const purchaseResponse = await purchaseTicket(user.access_token, eventId, ticketTypeId, quantity);
+    console.log("PurchaseTicket response:", purchaseResponse); // Debug log
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: purchaseResponse.amount,
+      currency: purchaseResponse.currency,
+      order_id: purchaseResponse.orderId,
+      name: "ABC Evantra",
+      description: `Ticket Purchase for ${ticketType?.name || "Event"}`,
+      handler: async function (response: any) {
+        try {
+          console.log("Razorpay handler response:", response); // Debug log
+          await confirmPurchase(user.access_token, eventId, ticketTypeId, purchaseResponse.orderId, quantity);
+          setIsPurchaseSuccess(true);
+        } catch (err: any) {
+          console.error("ConfirmPurchase error:", err);
+          setError(err.message || "Unable to confirm your purchase. Please contact support.");
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+      prefill: {
+        email: user.profile.email,
+        contact: user.profile.phone_number,
+      },
+      theme: {
+        color: "#9333ea",
+      },
+    };
 
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } catch (err: any) {
-      setError(err.message || "An unknown error occurred");
-      setIsProcessing(false);
-    }
-  };
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
+  } catch (err: any) {
+    console.error("handlePurchase error:", err);
+    setError(err.message || "Unable to process your purchase");
+    setIsProcessing(false);
+  }
+};
 
   if (isPurchaseSuccess) {
     return (
