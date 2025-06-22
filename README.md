@@ -11,13 +11,16 @@ and Chart.js for data visualizations. This repo has frontend source code.
 
 ## Who are users [sample test cases for my project I created in Cloud_IAM (keyclock)]
 ```
-USERNAME                    EMAIL                       PASSWORD                EXPECTED_ACTIONS
+---------------------------------------------------------------------------------------------------------------------------
+USERNAME                    EMAIL                        PASSWORD                EXPECTED_ACTIONS
+----------------------------------------------------------------------------------------------------------------------------
 admin                       admin@email.com	            Password$123            administrator_of_Cloud_IAM	
-organizer	                organizer@yopmail.com	    Password$123            user_and_organizer_of_events
-organizer2@yopmail.com      organizer2@yopmail.com	    Password$123            user_and_organizer_of_events
-staff	                    staff@yopmail.com	        Password#123            user_and_staff_of_events
-staff2@yopmail.com          staff2@yopmail.com          Password#123            user_and_staff_of_events
-testuser	                testuser@yopmail.com        Password#123            common_user_who_will_book_ticket_for_events
+organizer	                organizer@yopmail.com	      Password$123            user_and_organizer_of_events
+organizer2@yopmail.com      organizer2@yopmail.com	      Password$123            user_and_organizer_of_events
+staff	                      staff@yopmail.com	         Password#123            user_and_staff_of_events
+staff2@yopmail.com          staff2@yopmail.com           Password#123            user_and_staff_of_events
+testuser	                   testuser@yopmail.com         Password#123            common_user_who_will_book_ticket_for_events
+-----------------------------------------------------------------------------------------------------------------------------
 ```
 
 ## Features
@@ -92,8 +95,8 @@ ddl-auto: update
 Set up a Keycloak realm (e.g., evantra-realm).
 Create a client (e.g., abc-evantra-client) with:
 Client type: OpenID Connect
-Valid redirect URIs: http://localhost:3000/*
-Web origins: http://localhost:3000
+Valid redirect URIs: http://localhost:5173/*
+Web origins: http://localhost:5173
 
 Add roles: ROLE_ATTENDEE, ROLE_ORGANIZER, ROLE_STAFF.
 Map user attributes (e.g., phone_number) to JWT claims.
@@ -132,7 +135,7 @@ VITE_API_BASE_URL=http://localhost:8080/api/v1
 Run the Frontend:
 npm run dev
 
-The frontend runs on http://localhost:3000.
+The frontend runs on http://localhost:5173.
 
 4. Keycloak Configuration
 Realm Setup: Ensure your Keycloak realm has the correct client and roles.
@@ -149,7 +152,7 @@ Start Keycloak server (if not using CLOUD_IAM).
 Start PostgreSQL database.
 Run the backend (mvn spring-boot:run).
 Run the frontend (npm run dev).
-Access the app at http://localhost:3000.
+Access the app at http://localhost:5173.
 
 ### Example Usage
 As an Attendee:
