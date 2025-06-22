@@ -1,4 +1,4 @@
-# ABC Evantra - Event Management Platform
+# ABC Evantra - Event Ticket Management Platform
 ABC Evantra is a full-stack web application for event ticket management, allowing users to browse, create, manage, and purchase event tickets. 
 The platform supports three user roles: Attendees, Organizers, and Staff, with role-specific features such as ticket purchasing, 
 event creation, and QR code validation. ABC-Evantra is a modern event ticketing platform that allows organizers to create events, 
@@ -45,6 +45,14 @@ Tailwind CSS: Styling framework.
 Chart.js / react-chartjs-2: Data visualizations for analytics.
 Lucide-React: Icon library.
 ```
+# Pending tasks
+- Add proper Loader with logo image rotating
+- Ticket and event should come on reverse order(top, for easy access, better UI/UX).
+- Build community as social network (post, like, comment, share, for all community members).
+- Build it for generic currency (include dollar, euro, etc)
+- Ensure it has internationalization (add multiple lannguage)
+- Use proper map navigaion for location.
+- Improve overall UI.
 
 ## Prerequisites
 ```
