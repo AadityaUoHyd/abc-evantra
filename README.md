@@ -1,15 +1,15 @@
 # ABC Evantra - Event Ticket Management Platform
-ABC Evantra is a full-stack web application for event ticket management, allowing users to browse, create, manage, and purchase event tickets. 
-The platform supports three user roles: Attendees, Organizers, and Staff, with role-specific features such as ticket purchasing, 
-event creation, and QR code validation. ABC-Evantra is a modern event ticketing platform that allows organizers to create events, 
-sell tickets, and analyze performance, while attendees can browse and purchase tickets securely. Built with a Spring Boot backend 
+ABC Evantra is a full-stack web application for event ticket management, allowing users to browse, create, manage, and purchase event tickets.
+The platform supports three user roles: Attendees, Organizers, and Staff, with role-specific features such as ticket purchasing,
+event creation, and QR code validation. ABC-Evantra is a modern event ticketing platform that allows organizers to create events,
+sell tickets, and analyze performance, while attendees can browse and purchase tickets securely. Built with a Spring Boot backend
 and a React frontend, the platform leverages Keycloak for authentication and authorization, Razorpay for payments, NeonDB for PostgreSQL,
 and Chart.js for data visualizations. This repo has frontend source code.
 
 ![](https://raw.githubusercontent.com/AadityaUoHyd/abc-evantra/refs/heads/main/abc-evantra-screenshot.png)
 
 
-## Who are users [sample test cases for my project I created in Cloud_IAM (keyclock)]
+## Who are users [sample test cases for my project I created in Cloud_IAM (keycloak)]
 ```
 ---------------------------------------------------------------------------------------------------------------------------
 USERNAME                    EMAIL                        PASSWORD                EXPECTED_ACTIONS
@@ -56,8 +56,8 @@ Lucide-React: Icon library.
 - Ticket and event should come on reverse order(top, for easy access, better UI/UX).
 - Build community as social network (post, like, comment, share, for all community members).
 - Build it for generic currency (include dollar, euro, etc)
-- Ensure it has internationalization (add multiple lannguage)
-- Use proper map navigaion for location.
+- Ensure it has internationalization (add multiple language)
+- Use proper map navigation for location.
 - Improve overall UI.
 
 ## Prerequisites
@@ -91,7 +91,7 @@ jpa:
 hibernate:
 ddl-auto: update
 
-### Configure Keycloak:
+### Configure Keycloak (use Cloud_IAM which uses keycloak underlying (OR) spin keycloak in docker):
 Set up a Keycloak realm (e.g., evantra-realm).
 Create a client (e.g., abc-evantra-client) with:
 Client type: OpenID Connect
@@ -123,16 +123,17 @@ The backend runs on http://localhost:8080.
 3. Frontend Setup
 Install Dependencies:
 cd frontend
-npm install
+npm install --force (OR) npm i --legacy-peer-deps
 
-Configure Environment:
+## Configure Environment:
 Create a .env file in the frontend directory:VITE_KEYCLOAK_URL=http://localhost:8080
 VITE_KEYCLOAK_REALM=evantra-realm
 VITE_KEYCLOAK_CLIENT_ID=abc-evantra-client
 VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 VITE_API_BASE_URL=http://localhost:8080/api/v1
 
-Run the Frontend:
+## Run the Frontend:
+npm run build
 npm run dev
 
 The frontend runs on http://localhost:5173.
