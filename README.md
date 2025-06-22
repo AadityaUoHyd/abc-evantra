@@ -6,7 +6,9 @@ sell tickets, and analyze performance, while attendees can browse and purchase t
 and a React frontend, the platform leverages Keycloak for authentication and authorization, Razorpay for payments, NeonDB for PostgreSQL,
 and Chart.js for data visualizations. This repo has frontend source code.
 
-## Who are users (sample test cases for my project)
+![](https://raw.githubusercontent.com/AadityaUoHyd/abc-evantra/refs/heads/main/abc-avantra-screenshot.png)
+
+## Who are users [sample test cases for my project I created in Cloud_IAM (keyclock)]
 ```
 USERNAME                    EMAIL                       PASSWORD                EXPECTED_ACTIONS
 admin                       admin@email.com	            Password$123            administrator_of_Cloud_IAM	
